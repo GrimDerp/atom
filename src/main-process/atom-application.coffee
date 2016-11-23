@@ -94,6 +94,7 @@ class AtomApplication
 
     @listenForArgumentsFromNewProcess()
     @setupDockMenu()
+    @setupWindowTaskbar()
 
     @launch(options)
 
@@ -386,11 +387,21 @@ class AtomApplication
       event.returnValue = true
 
   setupDockMenu: ->
-    if process.platform is 'darwin'
-      dockMenu = Menu.buildFromTemplate [
-        {label: 'New Window',  click: => @emit('application:new-window')}
-      ]
-      app.dock.setMenu dockMenu
+    return unless process.platform is 'darwin'
+    app.dock.setMenu = Menu.buildFromTemplate [
+      {label: 'New Window', click: => @emit('application:new-window')}
+    ]
+
+  setupWindowTaskbar: ->
+    return unless process.platform is 'win32'
+    app.setJumpList [
+      {type: 'recent'}, # Recent Files
+      {items:           # Tasks
+        [
+          {type: 'task', title: 'New Window', program: process.execPath, args: '--new-window', description: 'Opens a new Atom window'}
+        ]
+      }
+    ]
 
   # Public: Executes the given command.
   #
